@@ -1,12 +1,15 @@
 import colorama
 from colorama import Fore, Back, Style
+import os
+
 colorama.init()
 
 class Player:
     
-    def __init__(self,name,p_color):
+    def __init__(self,name,p_color,num):
         self.name = name
         self.p_color = p_color
+        self.num = num
     
     def get_name_player(self):
         return self.name
@@ -19,6 +22,10 @@ class Piece:
     
     def get_piece_color(self):
         return self.player.p_color
+    
+    def get_player_num(self):
+        return self.player.num
+
 
 
 
@@ -39,6 +46,9 @@ class Square:
 
     def piece_color(self):
         return self.piece.get_piece_color()
+    
+    def get_piece_player_num(self):
+        return self.piece.get_player_num()
 
     def get_piece(self):
         return self.piece
@@ -79,28 +89,61 @@ class Board:
             self.matrix.append(aux)
 
     def draw_matrix(self):
+        clear = lambda: os.system('cls')
+        clear()
         draw_b = ''
+        reset = Style.RESET_ALL
+        con = 0
+        for a in range(1,self.size_m+1):
+            draw_b += str(a) + ' '
+        draw_b += '\n'
         for row in self.matrix:
             for col in row:
                 if col.is_piece_inside():
                     draw_b += col.piece_color() + '© ' + reset
                 else:
                     draw_b += col.color + '■ '+ reset
-            draw_b += '\n'
+            con += 1
+            draw_b += '|'+str(con) +'\n'
         print(draw_b)
+
+    def move_piece(self,from_x,from_y,to_x,to_y):
+
+        if from_y == to_y or from_x == to_x or from_x <0 or from_x >= self.size_m or from_y <0 or from_y >= self.size_m or to_x <0 or to_x >= self.size_m or to_y <0 or to_y >= self.size_m:
+            self.draw_matrix()
+            print('Wrong coordinates')
+            return
+        if self.matrix[from_y][from_x].is_piece_inside():
+            if self.matrix[to_y][to_x].is_piece_inside():
+                self.draw_matrix()
+                print('Wrong coordinates')
+            else:
+                self.matrix[to_y][to_x].assign_piece(self.matrix[from_y][from_x].piece)
+                self.matrix[from_y][from_x].deallocate_piece()
+                self.draw_matrix()
+        else:
+            self.draw_matrix()
+            print('Wrong coordinates')
 
     def get_matrix(self):
         return self.matrix
 
 
-player1 = Player('Jose',Fore.GREEN)
-player2 = Player('Carlos',Fore.YELLOW)
-reset = Style.RESET_ALL
-board = Board()
+player1 = Player('Jose',Fore.GREEN,1)
+player2 = Player('Carlos',Fore.YELLOW,2)
+
+board = Board(10)
 board.generate_squares(player1,player2)
 board.draw_matrix()
-# b_matrix[3][0].assign_piece(b_matrix[2][1].piece)
-# b_matrix[2][1].deallocate_piece()
+while True:
+    print('Enter the coordinates (x, y) of the tab to move')
+    from_x = int(input()) - 1
+    from_y = int(input()) - 1
+    print('Enter the coordinates (x, y) of where to move')
+    to_x = int(input()) - 1
+    to_y = int(input()) - 1
+    board.move_piece(from_x,from_y,to_x,to_y)
+
 
 
 
