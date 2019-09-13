@@ -89,7 +89,7 @@ class Board:
             self.matrix.append(aux)
 
     def draw_matrix(self):
-        clear = lambda: os.system('cls')
+        clear = lambda: os.system('clear')
         clear()
         draw_b = ''
         reset = Style.RESET_ALL
@@ -116,20 +116,34 @@ class Board:
         
             if self.matrix[from_y][from_x].get_piece_player_num() == player_turn:
         
-                if player_turn == 1:
+                # if player_turn == 1:
         
-                    if from_y < to_y:
-                        return self.wrong(player_turn)
+                #     if from_y < to_y:
+                #         return self.wrong(player_turn)
                 
-                else:
+                # else:
 
-                    if from_y > to_y:
-                        return self.wrong(player_turn)
+                #     if from_y > to_y:
+                #         return self.wrong(player_turn)
         
                 if self.matrix[to_y][to_x].is_piece_inside():
                     return self.wrong(player_turn)
         
                 else:
+                    dif_y,dir_y = difference_between_and_direction(from_y,to_y)
+                    dif_x,dir_x = difference_between_and_direction(from_x,to_x)
+
+                    if dif_x > 2 or dif_y > 2 or dif_x != dif_y:
+                        return self.wrong(player_turn)
+                    
+                    elif dif_x == 2:
+                        if self.matrix[to_y - dir_y][to_x - dir_x].is_piece_inside():
+                            if self.matrix[to_y - dir_y][to_x - dir_x].get_piece_player_num() != player_turn:
+                                self.matrix[to_y - dir_y][to_x - dir_x].deallocate_piece()
+                        
+                        else:
+                            return self.wrong(player_turn)
+
                     self.matrix[to_y][to_x].assign_piece(self.matrix[from_y][from_x].piece)
                     self.matrix[from_y][from_x].deallocate_piece()
                     self.draw_matrix()
@@ -153,15 +167,24 @@ class Board:
         print(message)
         return pt
 
+    def verify_forced_movements(self):
+        pass
+        
     def get_matrix(self):
         return self.matrix
 
+def difference_between_and_direction(a,b):
+    if a > b:
+        return a - b,-1
+    else:
+        return b - a,+1
+
 
 while True:
-    name_player1 = input('Write name of player number 1')
-    name_player2 = input('Write name of player number 2')
-    player1 = Player('Jose',Fore.GREEN,1)
-    player2 = Player('Carlos',Fore.YELLOW,2)
+    name_player1 = input('Write name of player number 1: ')
+    name_player2 = input('Write name of player number 2: ')
+    player1 = Player(name_player1,Fore.GREEN,1)
+    player2 = Player(name_player2,Fore.YELLOW,2)
     board = Board(8)
     board.generate_squares(player1,player2)
     board.draw_matrix()
@@ -180,7 +203,7 @@ while True:
         if from_x == -1 and from_y == -1:
             break
         player_turn =board.move_piece(from_x,from_y,to_x,to_y,player_turn)
-    salir = input('Write \'s\' if you want to end the game')
+    salir = input('Write \'s\' if you want to end the game: ')
     if salir == 's':
         break
 
