@@ -196,7 +196,7 @@ class Board:
         return self.matrix
     
     def coordinates_is_in_range(self,x,y):
-        if (x < self.size_m and x > 0) and (y <self.size_m and y > 0):
+        if (x < self.size_m and x >= 0) and (y <self.size_m and y >= 0):
             return True
         return False
 
@@ -213,7 +213,7 @@ while True:
     name_player2 = input('Write name of player number 2: ')
     player1 = Player(name_player1,Fore.GREEN,1)
     player2 = Player(name_player2,Fore.YELLOW,2)
-    board = Board(12)
+    board = Board(8)
     board.generate_squares(player1,player2)
     board.draw_matrix()
     player_turn = player1.get_player_num()
