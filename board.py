@@ -23,14 +23,14 @@ class Board:
             x = 0
             while x < self.size_m:
 
-                #If to leave 2 rows of empty squares
+                #If sentence to leave 2 rows of empty squares
                 if y < (self.size_m/2) -1 or y >= (self.size_m/2) + 1:                        
                     if i:
                         aux.append(Square(Fore.WHITE))
                         i = False
                     else:
 
-                        #If to choose which player will own the piece
+                        #If sentence to choose which player will own the piece
                         if y > self.size_m/2:
                             player1.add_piece(Piece(player1.get_player_color()))
                             aux.append(Square(Fore.RED,player1.get_last_piece()))
@@ -47,7 +47,7 @@ class Board:
                         i = True
                 x += 1
 
-            #If to begin every row with a different color of square
+            #If sentence to begin every row with a different color of square
             if i:
                 i = False
             else:
@@ -88,10 +88,10 @@ class Board:
         if not self.verify_moves(from_x,from_y,to_x,to_y,playing,dif_x,dif_y,dir_y):
             return self.wrong(playing)
         
-        #If to verify if the piece tries to move two squares which means that it tries to eat
+        #If sentence to verify if the piece tries to move two squares which means that it tries to eat
         if dif_x == 2:
         
-            #If to verify if the piece can eat
+            #If sentence to verify if the piece can eat
             if not self.piece_can_eat(from_x,from_y,to_x,to_y,playing,dir_x,dir_y):
                 return self.wrong(playing)
         
@@ -101,7 +101,7 @@ class Board:
             self.matrix[to_y][to_x].assign_piece(self.matrix[from_y][from_x].piece)
             self.matrix[from_y][from_x].deallocate_piece()
         
-            #If to continue eating if the piece moved can do it
+            #If sentence to continue eating if the piece moved can do it
             if self.piece_can_eat_after_eat(to_x,to_y,playing) != []:
                 self.draw_matrix()
                 return playing
@@ -114,7 +114,7 @@ class Board:
         #Variable that is true if the piece would become queen with the movement made
         become_queen = to_y == 0 if playing.get_player_dir() == -1 and isinstance(self.matrix[to_y][to_x].get_piece(),Piece) else to_y == self.size_m -1
         
-        #If he becomes king, he replaces the piece moved by a queen class
+        #If becomes queen is equal to true, replaces the piece moved by a queen piece
         if become_queen:
             playing.remove_piece(self.matrix[to_y][to_x].get_piece())
             new_queen = Queen_piece(self.matrix[to_y][to_x].piece_color())
@@ -156,6 +156,8 @@ class Board:
 
     #Method to verify which forced movements are in this turn
     def verify_forced_movements(self,playing):
+        
+        #Array that stores the mandatory movements of the current turn
         forced = []
         #Choose the direction of the possible moves for normal pieces
         change_y = 2 if playing.get_player_dir() == 1 else -2
@@ -175,7 +177,7 @@ class Board:
     
     #Method to add the forced elements
     def add_forced_movements(self,index_col,index_row,change_y,playing,forced):
-        #Establish the possible possession where to move
+        #Establish the possible positions where to move
         to_x = index_col + 2
         to_y = index_row + change_y
         dif_x,dif_y,dir_x,dir_y = self.difference_between_and_direction(index_col,index_row,to_x,to_y)
@@ -186,7 +188,7 @@ class Board:
             if self.piece_can_eat(index_col,index_row,to_x,to_y,playing,dir_x,dir_y):
                 forced.append([index_col,index_row,to_x,to_y])
 
-        #Establish the possible possession where to move    
+        #Establish the possible positions where to move    
         to_x = index_col - 2
         dif_x, dir_x = self.difference_between(index_col,to_x),self.direction(index_col,to_x)
 
