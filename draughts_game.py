@@ -52,14 +52,14 @@ while menu_index not in menu or menu[menu_index] != "Exit":
                 opponent = player1 if playing == player2 else player2
                 
                 #Write the coordinates of the movement you want to perform
-                print('Enter > 0the coordinates (x, y) of the tab to move')
+                print('Enter the coordinates (x, y) of the tab to move')
                 from_x = input('x: ')
                 from_y = input('y: ')
                 print('Enter the coordinates (x, y) of where to move')
                 to_x = input('x: ')
                 to_y = input('y: ')
                 
-                #If to determine that the input that was entered is a number
+                #If sentence to determine that the input that was entered is a number
                 if len(from_x) == 1 and len(from_y) == 1 and len(to_y) == 1 and len(to_x) == 1:
                     if (48 <= ord(from_x) <= 57 and 48 <= ord(from_y) <= 57 and 48 <= ord(to_x) <= 57 and 48 <= ord(to_y) <= 57):
                         from_x,from_y,to_x,to_y = int(from_x) - 1,int(from_y) - 1,int(to_x) - 1,int(to_y) - 1
@@ -88,7 +88,7 @@ while menu_index not in menu or menu[menu_index] != "Exit":
                     board.draw_matrix()
                     print("Please write a number")
                 
-                #Check if the command to enter the coordinates (0,0) was set
+                #Check if the command to enter the coordinates (0,0) was set, it is used to finish the game
                 if from_x == -1 and from_y == -1:
                     
                     #Press s to end the current game
