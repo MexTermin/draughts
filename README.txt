@@ -1,3 +1,7 @@
+Instructions to play:
+    - Contain all files in the same folder
+    - run the draughts_game.py file in the system console
+    - follow the instructions of the game presented on the console
 
 Draughts is a board game for two opponents. The game consists of moving the pieces diagonally 
 through the red or white squares of a board of 64 squares with the intention of 
