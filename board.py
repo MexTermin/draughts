@@ -8,6 +8,7 @@ import os
 #Class of board
 class Board:
 
+    clear_text = ""
     #Init method to save board values
     def __init__(self,size_m = 8):
         self.matrix = []
@@ -56,7 +57,7 @@ class Board:
 
     #Method to draw the board
     def draw_matrix(self):
-        clear = lambda: os.system('clear')
+        clear = lambda: os.system(self.clear_text)
         clear()
         draw_b = 'x→ '
         reset = Style.RESET_ALL

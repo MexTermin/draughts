@@ -8,8 +8,23 @@ from board import Board
 import os
 colorama.init()
 
+#Menu to choose used operating system
+menu_OS = {"1":"Windows","2": "Linux"}
+print('\n\n\n')
+for element in menu_OS:
+    print("\t\t\t"+element +"- " + menu_OS[element])
+menu_index_SO = ""
+while not menu_index_SO in  menu_OS:
+    print('\n\nSeleccione el numero del sistema operativo actual')
+    menu_index_SO = input()
+ 
+#Assign variable to clean the console
+clear_text = "clear" if menu_OS[menu_index_SO] == "Linux" else "cls"
+Board.clear_text = clear_text
+
 #Clear console screen
-clear = lambda: os.system('clear')
+clear = lambda: os.system(clear_text)
+clear()
 menu_index = 0
 
 #Main menu
@@ -17,6 +32,7 @@ menu = {"1":"New game","2": "Exit"}
 
 #While ending when the exit menu option is selected
 while menu_index not in menu or menu[menu_index] != "Exit":
+    clear = lambda: os.system(clear_text)
     clear()
     #Show main menu
     print("\n\n\n")
@@ -99,7 +115,7 @@ while menu_index not in menu or menu[menu_index] != "Exit":
         #If the while ends by finishing the game prints the winner and shows the option to play again
         if menu_index == "1" and (player2.get_amount_pieces() <= 0 or player1.get_amount_pieces() <= 0):
             winner = player1 if player2.get_amount_pieces() <= 0 else player2
-            clear = lambda: os.system('clear')
+            clear = lambda: os.system(clear_text)
             clear()
             print("\n\n\n\t\t\t"+winner.get_name_player() + " IS THE WINNER!!!!!")
         #If the exit option was chosen, the program will end
