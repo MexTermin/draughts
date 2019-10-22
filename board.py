@@ -195,7 +195,7 @@ class Board:
             'from_x': test_coordinates['index_col'],
             'from_y': test_coordinates['index_row'],
             'to_x': test_coordinates['index_col'] + 2,
-            'to_y': test_coordinates['index_col'] + test_coordinates['change_y']
+            'to_y': test_coordinates['index_row'] + test_coordinates['change_y']
         }
         dif_dir = self.difference_between_and_direction(coordinates)
         
@@ -204,12 +204,17 @@ class Board:
             forced.append([coordinates])
 
         #Establish the possible positions where to move   
-        coordinates['to_x'] =  coordinates['from_x'] - 2
-        dif_dir = self.difference_between_and_direction(coordinates)
+        coordinates2 = {
+            'from_x': test_coordinates['index_col'],
+            'from_y': test_coordinates['index_row'],
+            'to_x': test_coordinates['index_col'] - 2,
+            'to_y': test_coordinates['index_row'] + test_coordinates['change_y']
+        }
+        dif_dir = self.difference_between_and_direction(coordinates2)
 
         #Check if this movement should be added
-        if self.can_add_forced_movements(coordinates,playing,dif_dir):
-            forced.append([coordinates])
+        if self.can_add_forced_movements(coordinates2,playing,dif_dir):
+            forced.append([coordinates2])
         return forced
 
     def can_add_forced_movements(self,coordinates,playing,dif_dir):
