@@ -2,7 +2,6 @@ import colorama
 from colorama import Fore, Back, Style
 from player import Player
 from piece import Piece
-from queen_piece import Queen_piece
 from square import Square
 import os
 #Class of board
@@ -79,49 +78,42 @@ class Board:
         print(draw_b)
 
     #Method to move a piece in the board
-    def move_piece(self,from_x,from_y,to_x,to_y,playing,opponent):
+    def move_piece(self,coordinates,playing,opponent):
 
-        #Variables that establish difference of squares and the direction that the piece is trying to move
-        dif_y,dir_y = self.difference_between(from_y,to_y), self.direction(from_y,to_y)
-        dif_x,dir_x = self.difference_between(from_x,to_x), self.direction(from_x,to_x)
+        #Dictionary that establish difference of squares and the direction that the piece is trying to move
+        dif_dir = self.difference_between_and_direction(coordinates)
         
         #If to verify that the movement being attempted is correct
-        if not self.verify_moves(from_x,from_y,to_x,to_y,playing,dif_x,dif_y,dir_y):
+        if not self.verify_moves(coordinates,playing,dif_dir):
             return self.wrong(playing)
         
         #If sentence to verify if the piece tries to move two squares which means that it tries to eat
-        if dif_x == 2:
+        if dif_dir['dif_x'] == 2:
         
             #If sentence to verify if the piece can eat
-            if not self.piece_can_eat(from_x,from_y,to_x,to_y,playing,dir_x,dir_y):
+            if not self.piece_can_eat(coordinates,playing,dif_dir):
                 return self.wrong(playing)
         
             #If the piece can eat it proceeds to make the move and eliminate the attacked piece of the opponent and the board
-            opponent.remove_piece(self.matrix[to_y - dir_y][to_x - dir_x].get_piece())
-            self.matrix[to_y - dir_y][to_x - dir_x].deallocate_piece()
-            self.matrix[to_y][to_x].assign_piece(self.matrix[from_y][from_x].piece)
-            self.matrix[from_y][from_x].deallocate_piece()
+            opponent.remove_piece(self.matrix[coordinates['to_y'] - dif_dir['dir_y']][coordinates['to_x'] - dif_dir['dir_x']].get_piece())
+            self.matrix[coordinates['to_y'] - dif_dir['dir_y']][coordinates['to_x'] - dif_dir['dir_x']].deallocate_piece()
+            self.matrix[coordinates['to_y']][coordinates['to_x']].assign_piece(self.matrix[coordinates['from_y']][coordinates['from_x']].get_piece())
+            self.matrix[coordinates['from_y']][coordinates['from_x']].deallocate_piece()
         
             #If sentence to continue eating if the piece moved can do it
-            if self.piece_can_eat_after_eat(to_x,to_y,playing) != []:
+            if self.piece_can_eat_after_eat(coordinates['to_x'],coordinates['to_y'],playing) != []:
                 self.draw_matrix()
                 return playing
         
         #if the difference of square is one perform the movement
         else:
-            self.matrix[to_y][to_x].assign_piece(self.matrix[from_y][from_x].piece)
-            self.matrix[from_y][from_x].deallocate_piece()
+            self.matrix[coordinates['to_y']][coordinates['to_x']].assign_piece(self.matrix[coordinates['from_y']][coordinates['from_x']].get_piece())
+            self.matrix[coordinates['from_y']][coordinates['from_x']].deallocate_piece()
         
-        #Variable that is true if the piece would become queen with the movement made
-        become_queen = to_y == 0 if playing.get_player_dir() == -1 and isinstance(self.matrix[to_y][to_x].get_piece(),Piece) else to_y == self.size_m -1
         
-        #If becomes queen is equal to true, replaces the piece moved by a queen piece
-        if become_queen:
-            playing.remove_piece(self.matrix[to_y][to_x].get_piece())
-            new_queen = Queen_piece(self.matrix[to_y][to_x].piece_color())
-            playing.add_piece(new_queen)
-            self.matrix[to_y][to_x].deallocate_piece()
-            self.matrix[to_y][to_x].assign_piece(new_queen)
+        #If becomes queen is equal to true, become piece in a queen
+        if self.become_queen(playing,coordinates):
+            self.matrix[coordinates['to_y']][coordinates['to_x']].get_piece().convert_to_queen()
         
         #Draw matrix and return opponent to change the turn
         self.draw_matrix()
@@ -134,26 +126,40 @@ class Board:
         return pt
     
     #Method that returns false if the movement cannot be performed
-    def verify_moves(self,from_x,from_y,to_x,to_y,playing,dif_x,dif_y,dir_y):
+    def verify_moves(self,coordinates,playing,dif_dir):
         #Verify that the piece is moving diagonally and that the strings are in range
-        if dif_x == 0 or dif_y == 0 or not self.coordinates_is_in_range(from_x,from_y) or not self.coordinates_is_in_range(to_x,to_y):
+        if self.is_not_diagonal(dif_dir):
+            return False
+        #Verify the coordinates are in range
+        if not self.coordinates_is_in_range(coordinates):
             return False
         #Verify there is a piece in the coordinate that was specified
-        if not self.matrix[from_y][from_x].is_piece_inside():
+        if not self.matrix[coordinates['from_y']][coordinates['from_x']].is_piece_inside():
             return False
         #Verify that the piece belongs to the player who is playing
-        if self.matrix[from_y][from_x].get_piece() not in playing.get_list_pieces():
+        if not self.is_in_player_list(coordinates,playing):
             return False
         #Verify that there is no piece in the square that is moving
-        if self.matrix[to_y][to_x].is_piece_inside():
+        if self.matrix[coordinates['to_y']][coordinates['to_x']].is_piece_inside():
             return False
         #Verify that the piece is not moving more than two squares and equal amount in both x and y
-        if dif_x > 2 or dif_y > 2 or dif_x != dif_y:
+        if dif_dir['dif_x'] > 2 or dif_dir['dif_y'] > 2 or dif_dir['dif_x'] != dif_dir['dif_y']:
             return False
+        # if dif_dir['dif_x'] > 2:
+        #     return False
         #Verify that the pieces that are not queens cannot move backwards
-        if not isinstance(self.matrix[from_y][from_x].get_piece(),Queen_piece) and dir_y != playing.get_player_dir():
-            return False
+        if not self.matrix[coordinates['from_y']][coordinates['from_x']].get_piece().pieces_is_queen():
+            if dif_dir['dir_y'] != playing.get_player_dir():
+                return False
         return True
+    
+    #Method to verify if the piece is in player list
+    def is_in_player_list(self,coordinates,playing):
+        return self.matrix[coordinates['from_y']][coordinates['from_x']].get_piece() in playing.get_list_pieces()
+
+    #Method to verify that it is a diagonal movement
+    def is_not_diagonal(self,dif_dir):
+        return dif_dir['dif_x'] == 0 or dif_dir['dif_y'] == 0
 
     #Method to verify which forced movements are in this turn
     def verify_forced_movements(self,playing):
@@ -168,69 +174,82 @@ class Board:
             index_col = 0
             while index_col < len(self.matrix[index_row]):
                 #Add the list of forced move
-                forced = self.add_forced_movements(index_col,index_row,change_y,playing,forced)
+                test_coordinates = {
+                    'index_col': index_col,
+                    'index_row': index_row,
+                    'change_y': change_y
+                }
+                forced = self.add_forced_movements(test_coordinates,playing,forced)
                 #if the piece in the square is a queen piece add the list of forced move in the other direccion
-                if isinstance(self.matrix[index_row][index_col].get_piece(),Queen_piece):
-                    forced = self.add_forced_movements(index_col,index_row,change_y * -1,playing,forced)
+                if self.matrix[index_row][index_col].is_piece_inside() and self.matrix[index_row][index_col].get_piece().pieces_is_queen():
+                    test_coordinates['change_y'] *= -1
+                    forced = self.add_forced_movements(test_coordinates,playing,forced)
                 index_col += 1
             index_row += 1
         return forced
     
     #Method to add the forced elements
-    def add_forced_movements(self,index_col,index_row,change_y,playing,forced):
+    def add_forced_movements(self,test_coordinates,playing,forced):
         #Establish the possible positions where to move
-        to_x = index_col + 2
-        to_y = index_row + change_y
-        dif_x,dif_y,dir_x,dir_y = self.difference_between_and_direction(index_col,index_row,to_x,to_y)
+        coordinates = {
+            'from_x': test_coordinates['index_col'],
+            'from_y': test_coordinates['index_row'],
+            'to_x': test_coordinates['index_col'] + 2,
+            'to_y': test_coordinates['index_col'] + test_coordinates['change_y']
+        }
+        dif_dir = self.difference_between_and_direction(coordinates)
         
         #Check if this movement should be added
-        if self.verify_moves(index_col,index_row,to_x,to_y,playing,dif_x,dif_y,dir_y):
-    
-            if self.piece_can_eat(index_col,index_row,to_x,to_y,playing,dir_x,dir_y):
-                forced.append([index_col,index_row,to_x,to_y])
+        if self.can_add_forced_movements(coordinates,playing,dif_dir):
+            forced.append([coordinates])
 
-        #Establish the possible positions where to move    
-        to_x = index_col - 2
-        dif_x, dir_x = self.difference_between(index_col,to_x),self.direction(index_col,to_x)
+        #Establish the possible positions where to move   
+        coordinates['to_x'] =  coordinates['from_x'] - 2
+        dif_dir = self.difference_between_and_direction(coordinates)
 
         #Check if this movement should be added
-        if self.verify_moves(index_col,index_row,to_x,to_y,playing,dif_x,dif_y,dir_y):
-    
-            if self.piece_can_eat(index_col,index_row,to_x,to_y,playing,dir_x,dir_y):
-    
-                forced.append([index_col,index_row,to_x,to_y])
+        if self.can_add_forced_movements(coordinates,playing,dif_dir):
+            forced.append([coordinates])
         return forced
 
+    def can_add_forced_movements(self,coordinates,playing,dif_dir):
+        if self.verify_moves(coordinates,playing,dif_dir):
+            return self.piece_can_eat(coordinates,playing,dif_dir)
+        return False
+                
     #Method to verify if the piece can eat
-    def piece_can_eat(self,from_x,from_y,to_x,to_y,playing,dir_x,dir_y):
-        if self.matrix[to_y - dir_y][to_x - dir_x].is_piece_inside():
-            if self.matrix[to_y - dir_y][to_x - dir_x].get_piece() not in playing.get_list_pieces():
-                return True
+    def piece_can_eat(self,coordinates,playing,dif_dir):
+        if self.matrix[coordinates['to_y'] - dif_dir['dir_y']][coordinates['to_x'] - dif_dir['dir_x']].is_piece_inside():
+            return self.matrix[coordinates['to_y'] - dif_dir['dir_y']][coordinates['to_x'] - dif_dir['dir_x']].get_piece() not in playing.get_list_pieces()
         return False
     
     #Method to return the movements in which the piece can eat after eating
     def piece_can_eat_after_eat(self,from_x,from_y,playing):
         moves = []
-        to_x = from_x +2
-        to_y = from_y +2
-        moves = self.condition_to_eat_after_eat(from_x,from_y,playing,to_x,to_y,moves)
-        to_x = from_x +2
-        to_y = from_y -2
-        moves = self.condition_to_eat_after_eat(from_x,from_y,playing,to_x,to_y,moves)
-        to_x = from_x -2
-        to_y = from_y +2
-        moves = self.condition_to_eat_after_eat(from_x,from_y,playing,to_x,to_y,moves)
-        to_x = from_x -2
-        to_y = from_y -2
-        moves = self.condition_to_eat_after_eat(from_x,from_y,playing,to_x,to_y,moves)
+        coordinates = {
+            'from_x': from_x,
+            'from_y': from_y,
+            'to_x': from_x +2,
+            'to_y': from_y +2
+        }
+        moves = self.condition_to_eat_after_eat(coordinates,playing,moves)
+        coordinates['to_x'] = from_x +2
+        coordinates['to_y'] = from_y -2
+        moves = self.condition_to_eat_after_eat(coordinates,playing,moves)
+        coordinates['to_x'] = from_x -2
+        coordinates['to_y'] = from_y +2
+        moves = self.condition_to_eat_after_eat(coordinates,playing,moves)
+        coordinates['to_x'] = from_x -2
+        coordinates['to_y'] = from_y -2
+        moves = self.condition_to_eat_after_eat(coordinates,playing,moves)
         return moves
     
     #Method to add to the arrangement movements that meet the condition of eating after eating
-    def condition_to_eat_after_eat(self,from_x,from_y,playing,to_x,to_y,moves):
-        dir_x,dir_y = self.direction(from_x,to_x),self.direction(from_y,to_y)
-        if self.verify_moves(from_x,from_y,to_x,to_y,playing,2,2,dir_y):
-            if self.piece_can_eat(from_x,from_y,to_x,to_y,playing,dir_x,dir_y):
-                moves.append([from_x,from_y,to_x,to_y])
+    def condition_to_eat_after_eat(self,coordinates,playing,moves):
+        dif_dir = self.difference_between_and_direction(coordinates)
+        if self.verify_moves(coordinates,playing,dif_dir):
+            if self.piece_can_eat(coordinates,playing,dif_dir):
+                moves.append([coordinates])
         return moves
 
     #Method to return the matrix
@@ -238,8 +257,11 @@ class Board:
         return self.matrix
     
     #Method to determine if the coordinates are within the range of the matrix
-    def coordinates_is_in_range(self,x,y):
-        return True if (x < self.size_m and x >= 0) and (y <self.size_m and y >= 0) else False
+    def coordinates_is_in_range(self,coordinates):
+        for coor in coordinates:
+            if 0 > coordinates[coor] or  coordinates[coor] >= 8:
+                return False
+        return True
 
     #Method that returns the difference between two numbers
     def difference_between(self,a,b):
@@ -250,7 +272,14 @@ class Board:
         return -1 if a > b else +1
 
     #Method that returns the difference between two numbers and the direction of movement
-    def difference_between_and_direction(self,from_x,from_y,to_x,to_y):
-        dif_x, dif_y =self.difference_between(from_x,to_x), self.difference_between(from_y,to_y)
-        dir_x, dir_y = self.direction(from_x,to_x), self.direction(from_y,to_y)
-        return dif_x, dif_y, dir_x, dir_y
+    def difference_between_and_direction(self,coordinates):
+        dir_dif = {
+            'dif_x': self.difference_between(coordinates['from_x'],coordinates['to_x']),
+            'dif_y': self.difference_between(coordinates['from_y'],coordinates['to_y']),
+            'dir_x': self.direction(coordinates['from_x'],coordinates['to_x']),
+            'dir_y': self.direction(coordinates['from_y'],coordinates['to_y'])
+        }
+        return dir_dif
+    
+    def become_queen(self,playing,coordinates):
+        return coordinates['to_y'] == 0 if playing.get_player_dir() == -1 and not self.matrix[coordinates['to_y']][coordinates['to_x']].get_piece().pieces_is_queen() else coordinates['to_y'] == self.size_m -1
