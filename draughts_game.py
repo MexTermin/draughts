@@ -176,7 +176,7 @@ class Game:
                             print("Please write a number")
                         
                         #Check if the command to enter the coordinates (0,0) was set, it is used to finish the game
-                        if coordinates['from_x'] == -1 and coordinates['from_x'] == -1:
+                        if coordinates['from_x'] == -1 and coordinates['from_y'] == -1:
                             
                             #Press s to end the current game
                             end = input('Write \'s\' if you want to end the game: ').upper()
