@@ -145,8 +145,6 @@ class Board:
         #Verify that the piece is not moving more than two squares and equal amount in both x and y
         if dif_dir['dif_x'] > 2 or dif_dir['dif_y'] > 2 or dif_dir['dif_x'] != dif_dir['dif_y']:
             return False
-        # if dif_dir['dif_x'] > 2:
-        #     return False
         #Verify that the pieces that are not queens cannot move backwards
         if not self.matrix[coordinates['from_y']][coordinates['from_x']].get_piece().pieces_is_queen():
             if dif_dir['dir_y'] != playing.get_player_dir():
