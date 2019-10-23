@@ -1,1 +1,4 @@
 __pycache__
+*.pyc
+__pycache__/board.cpython-37.pyc
+__pycache__/piece.cpython-37.pyc
