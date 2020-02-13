@@ -6,7 +6,7 @@
 1. [Install pip](#install-pip)
 
 ## Description
->Draughts is a board game for two opponents. The game consists of moving the pieces diagonally through the red or    squares of a board of 64 squares with the intention of eating (capturing) the pieces of the opposing player passing over those pieces.
+>Draughts is a board game for two opponents. The game consists of moving the pieces diagonally through the red or squares of a board of 64 squares with the intention of eating (capturing) the pieces of the opposing player passing over those pieces.
 ___
 ## Rules
 >* Draughts is played by two opponents, on opposite sides of the ? gameboard.
